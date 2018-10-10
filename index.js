@@ -19,7 +19,6 @@ module.exports = function(opts){
 	if (!opts.quality) opts.quality = 75;
 
 	// hand over to binary
-	return dcp.spawn(cjpeg, opts); // Object.keys(opts).reduce(function(o,a){ return o.push(a),o.push(opts[a]),o; },[]).join(" "));
+	return dcp.spawn(cjpeg, opts);
 
 };
-
