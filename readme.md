@@ -8,11 +8,11 @@ you can use all `cjpeg` command line options in the object passed to `jpck(optio
 
 ## usage
 
-´´´ javascript
+``` javascript
 
 var fs = require("fs");
 var jpck = require("jpck");
 
 fs.createReadStream("./in.jpg").pipe(jpck({quality: 90})).pipe(fs.createWriteStream("./out.jpg"));
 
-´´´
+```
