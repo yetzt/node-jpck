@@ -1,10 +1,10 @@
 # jpck
 
-a streamable wrapper around mozjpeg. it's inspired by [mozjpeg-stream](https://www.npmjs.com/package/mozjpeg-stream), but without the weight of hundreds of dependencies and abandonnment security issues.
+a streamable wrapper around [js-mozjpegs jpegtran](https://www.npmjs.com/package/js-mozjpeg). 
 
-make sure you have `mozjpeg` installed and `cjpeg` in your `$PATH`. otherwise the jpeg stream will be just passed through without modification.
+you can use all `jpegtran` command line options in the object passed to `jpck(options)`.
 
-you can use all `cjpeg` command line options in the object passed to `jpck(options)`.
+be aware that [js-mozjpeg](https://www.npmjs.com/package/js-mozjpeg) is blocking. with the limit option you can set a maximum number of bytes for the input jpeg to be optimized. larger jpegs will just be passe through.
 
 ## usage
 
@@ -13,6 +13,6 @@ you can use all `cjpeg` command line options in the object passed to `jpck(optio
 var fs = require("fs");
 var jpck = require("jpck");
 
-fs.createReadStream("./in.jpg").pipe(jpck({quality: 90})).pipe(fs.createWriteStream("./out.jpg"));
+fs.createReadStream("./in.jpg").pipe(jpck({ optimize: true, copy: "none", fastcrush: true, limit: 102400 })).pipe(fs.createWriteStream("./out.jpg"));
 
 ```

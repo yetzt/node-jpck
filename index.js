@@ -1,24 +1,41 @@
 #!/usr/bin/env node
 
-var which = require("which");
-var dcp = require("duplex-child-process");
-
-// find cjpeg, account for homebrew
-var cjpeg = which.sync("cjpeg", { 
-	path: ((process.platform === 'darwin') ? process.env.PATH+":/usr/local/opt/mozjpeg/bin" : process.env.PATH),
-	nothrow: true
-});
+var stream = require("stream");
+var jpegtran = require("js-mozjpeg").jpegtran;
 
 module.exports = function(opts){
 
-	// just pass through if cjpeg is not installed
-	if (!cjpeg) return console.error("[jpck] no cjpeg binary found, just passing through"), (require("stream").PassThrough());
-	
-	// ensure opts and quality
+	// ensure opts and optimize
 	if (!opts || typeof opts !== "object") opts = {};
-	if (!opts.quality) opts.quality = 75;
-
-	// hand over to binary
-	return dcp.spawn(cjpeg, opts);
-
+	if (!(opts.optimize||opts.optimise||opts.opt||opts.o)) opts.optimize = true;
+	if (!opts.copy) opts.copy = "none";
+	
+	var mem = Buffer.allocUnsafe(0);
+	return new stream.Transform({
+		transform(chunk, encoding, fn) {
+			// check for limit 
+			if (opts.limited) {
+				// pass through
+				this.push(chunk);
+			} else if (opts.limit && mem.length > opts.limit) {
+				// flush memory buffer and pass through
+				this.push(mem);
+				this.push(chunk);
+				opts.limited = true;
+			} else {
+				// collect chunks
+				mem = Buffer.concat([mem, chunk]);
+			}
+			fn();
+		},
+		flush(fn) {
+			if (opts.limited || mem.length === 0) return fn();
+			// remove
+			delete opts.limit;
+			var result = jpegtran(mem, opts).data;
+			// check if result is ok and actually smaller
+			this.push((!!result && result.length < mem.length) ? result : mem);
+			fn();
+		}
+	});
 };
